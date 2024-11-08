@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@radix-ui/react-label";
 import { Send, Trash, Upload } from "lucide-react";
-import { ChangeEventHandler, KeyboardEventHandler, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, KeyboardEventHandler, MouseEvent, useEffect, useRef, useState } from "react";
 import { Form, useSubmit } from "react-router-dom";
 
 export default function MessageInput() {
@@ -31,13 +31,26 @@ export default function MessageInput() {
             if (e.shiftKey) return;
             e.preventDefault();
             const textarea = e.target as HTMLTextAreaElement;
-            submit(textarea.form);
+            submitForm(textarea.form);
         }
     }
 
     const handleRemoveFile = (index: number) => {
         images.splice(index, 1);
         setImages([...images]);
+    }
+
+    const handleSubmitButton = (e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        const button = e.target as HTMLButtonElement;
+        submitForm(button.form);
+    }
+
+    const submitForm = (form: HTMLFormElement | null) => {
+        if (message != '') {
+            submit(form);
+            setMessage('');
+        }
     }
 
     useEffect(() => {
@@ -61,15 +74,16 @@ export default function MessageInput() {
                         ))}
                     </div>
                     <div className="flex gap-2 items-end">
-                        <Textarea ref={textareaRef} rows={1} placeholder="Input message..." className="resize-none min-h-[40px] max-h-[120px]" onKeyDown={handleKeyDown} onChange={(e) => setMessage(e.target.value)} />
+                        <input name="action" value="put-message" type="hidden" />
+                        <Textarea ref={textareaRef} rows={1} name="text" placeholder="Input message..." className="resize-none min-h-[40px] max-h-[120px]" onKeyDown={handleKeyDown} value={message} onChange={(e) => setMessage(e.target.value)} />
                         <div className="flex gap-2">
                             <Button size="icon" variant="secondary" asChild>
                                 <div className="flex">
                                     <Label htmlFor="messageFiles" className="cursor-pointer"><Upload /></Label>
-                                    <Input className="hidden" id="messageFiles" type="file" multiple onChange={handleFilesInput} />
+                                    <Input className="hidden" id="messageFiles" name="attactments" type="file" multiple onChange={handleFilesInput} />
                                 </div>
                             </Button>
-                            <Button size="icon" name="action" value="put-message" type="submit"><Send /></Button>
+                            <Button size="icon" onClick={handleSubmitButton}><Send /></Button>
                         </div>
                     </div>
                 </div>

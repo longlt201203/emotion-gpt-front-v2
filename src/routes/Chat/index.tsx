@@ -1,19 +1,31 @@
-import { getChat, listChats } from "@/services/chat.service";
+import { createChat, getChat, listChats, putMessage } from "@/services/chat.service";
 import { ChatLoaderData } from "@/types";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "react-router-dom";
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MainContent from "./MainContent";
 import { z } from "zod";
 import { zx } from "zodix";
+import RightSidebar from "./RightSidebar";
 
 const chatActionSchema = z.object({
     action: z.enum(["new-chat", "put-message"]),
-    message: z.string()
+    message: z.string().optional()
 });
 
 export async function action({ params, request }: ActionFunctionArgs) {
     const formData = await request.formData();
-    zx.parseFormSafe(formData, chatActionSchema);
+    const data = await zx.parseForm(formData, chatActionSchema);
+    const chatId = Number(params.chatId);
+    switch (data.action) {
+        case 'new-chat':
+            const newChat = await createChat();
+            return redirect(`/chat/${newChat.id}`);
+        case 'put-message':
+            await putMessage(chatId, formData);
+            break;
+        default:
+            return new Error("Unknown action");
+    }
     return null;
 }
 
@@ -33,6 +45,7 @@ export default function Chat() {
         <div className="h-screen flex">
             <Sidebar />
             <MainContent />
+            <RightSidebar />
         </div>
     );
 }
