@@ -8,3 +8,4 @@ export * from "./chat";
 export * from "./chatlog";
 export * from "./auth-data";
 export * from "./chat-loader-data";
+export * from "./analyze";
